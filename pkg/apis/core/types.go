@@ -2050,6 +2050,10 @@ type Probe struct {
 	// This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
 	// +optional
 	TerminationGracePeriodSeconds *int64
+	// How often (in milliseconds) to perform the probe, defaults to 0.
+	// If this field is set, the PeriodSeconds field is ignored.
+	// +optional
+	PeriodMilliseconds int32
 }
 
 // PullPolicy describes a policy for if/when to pull a container image

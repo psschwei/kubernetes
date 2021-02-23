@@ -129,8 +129,12 @@ func newWorker(
 
 // run periodically probes the container.
 func (w *worker) run() {
-	probeTickerPeriod := time.Duration(w.spec.PeriodSeconds) * time.Second
-
+	var probeTickerPeriod time.Duration
+	if w.spec.PeriodMilliseconds == 0 {
+		probeTickerPeriod = time.Duration(w.spec.PeriodSeconds) * time.Second
+	} else {
+		probeTickerPeriod = time.Duration(w.spec.PeriodMilliseconds) * time.Millisecond
+	}
 	// If kubelet restarted the probes could be started in rapid succession.
 	// Let the worker wait for a random portion of tickerPeriod before probing.
 	// Do it only if the kubelet has started recently.
@@ -244,7 +248,8 @@ func (w *worker) doProbe() (keepGoing bool) {
 	}
 
 	// Probe disabled for InitialDelaySeconds.
-	if int32(time.Since(c.State.Running.StartedAt.Time).Seconds()) < w.spec.InitialDelaySeconds {
+	// TODO: (WIP mikebrow) convert initial delay to milliseconds???
+	if time.Since(c.State.Running.StartedAt.Time) < time.Duration(w.spec.InitialDelaySeconds)*time.Second {
 		return true
 	}
 
