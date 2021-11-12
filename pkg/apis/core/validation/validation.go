@@ -2673,6 +2673,9 @@ func validateProbe(probe *core.Probe, fldPath *field.Path) field.ErrorList {
 	if probe.TerminationGracePeriodSeconds != nil && *probe.TerminationGracePeriodSeconds <= 0 {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("terminationGracePeriodSeconds"), *probe.TerminationGracePeriodSeconds, "must be greater than 0"))
 	}
+	if probe.ReadSecondsAs == "milliseconds" && probe.PeriodSeconds < 100 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("periodSeconds"), probe.PeriodSeconds, "must be greater than 100 when using ReadSecondsAs: milliseconds"))
+	}
 	return allErrs
 }
 

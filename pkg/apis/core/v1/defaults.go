@@ -205,12 +205,22 @@ func SetDefaults_PodSpec(obj *v1.PodSpec) {
 	}
 }
 func SetDefaults_Probe(obj *v1.Probe) {
-	if obj.TimeoutSeconds == 0 {
-		obj.TimeoutSeconds = 1
+	if obj.ReadSecondsAs == "milliseconds" {
+		if obj.PeriodSeconds == 0 {
+			obj.PeriodSeconds = 10000
+		}
+		if obj.TimeoutSeconds == 0 {
+			obj.TimeoutSeconds = 1000
+		}
+	} else {
+		if obj.PeriodSeconds == 0 {
+			obj.PeriodSeconds = 10
+		}
+		if obj.TimeoutSeconds == 0 {
+			obj.TimeoutSeconds = 1
+		}
 	}
-	if obj.PeriodSeconds == 0 {
-		obj.PeriodSeconds = 10
-	}
+
 	if obj.SuccessThreshold == 0 {
 		obj.SuccessThreshold = 1
 	}

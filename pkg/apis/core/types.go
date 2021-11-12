@@ -2050,6 +2050,11 @@ type Probe struct {
 	// This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
 	// +optional
 	TerminationGracePeriodSeconds *int64
+	// Units to use for PeriodSeconds. Allowed values are "seconds" and "milliseconds".
+	// If using "milliseconds", the minimum allowed value for PeriodSeconds is 100ms, and defaults
+	// will be set to existing values in seconds.
+	// +optional
+	ReadSecondsAs string
 }
 
 // PullPolicy describes a policy for if/when to pull a container image

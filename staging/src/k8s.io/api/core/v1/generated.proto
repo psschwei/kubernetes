@@ -3970,6 +3970,12 @@ message Probe {
   // Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
   // +optional
   optional int64 terminationGracePeriodSeconds = 7;
+
+  // Units to use for PeriodSeconds. Allowed values are "seconds" and "milliseconds".
+  // If using "milliseconds", the minimum allowed value for PeriodSeconds is 100ms, and defaults
+  // will be set to existing values in seconds.
+  // +optional
+  optional string readSecondsAs = 8;
 }
 
 // ProbeHandler defines a specific action that should be taken in a probe.

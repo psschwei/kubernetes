@@ -6068,6 +6068,18 @@ func Test_validateProbe(t *testing.T) {
 			},
 			want: field.ErrorList{},
 		},
+		{
+			name: "periodSeconds too small when readSecondsAs milliseconds",
+			args: args{
+				probe: &core.Probe{
+					ProbeHandler:  core.ProbeHandler{Exec: &core.ExecAction{Command: []string{"echo"}}},
+					PeriodSeconds: 10,
+					ReadSecondsAs: "milliseconds",
+				},
+				fldPath: fldPath,
+			},
+			want: field.ErrorList{field.Invalid(fldPath.Child("periodSeconds"), 10, "must be greater than 100 when using ReadSecondsAs: milliseconds")},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

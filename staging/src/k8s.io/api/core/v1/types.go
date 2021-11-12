@@ -2151,6 +2151,11 @@ type Probe struct {
 	// Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
 	// +optional
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty" protobuf:"varint,7,opt,name=terminationGracePeriodSeconds"`
+	// Units to use for PeriodSeconds. Allowed values are "seconds" and "milliseconds".
+	// If using "milliseconds", the minimum allowed value for PeriodSeconds is 100ms, and defaults
+	// will be set to existing values in seconds.
+	// +optional
+	ReadSecondsAs string `json:"readSecondsAs,omitempty" protobuf:"bytes,8,opt,name=readSecondsAs"`
 }
 
 // PullPolicy describes a policy for if/when to pull a container image

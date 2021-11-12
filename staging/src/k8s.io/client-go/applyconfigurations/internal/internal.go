@@ -5938,6 +5938,9 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: periodSeconds
       type:
         scalar: numeric
+    - name: readSecondsAs
+      type:
+        scalar: string
     - name: successThreshold
       type:
         scalar: numeric
