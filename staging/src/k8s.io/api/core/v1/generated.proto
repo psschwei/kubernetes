@@ -3933,6 +3933,7 @@ message Probe {
   optional ProbeHandler handler = 1;
 
   // Number of seconds after the container has started before liveness probes are initiated.
+  // Defaults to 1.
   // More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
   // +optional
   optional int32 initialDelaySeconds = 2;
@@ -3945,6 +3946,7 @@ message Probe {
 
   // How often (in seconds) to perform the probe.
   // Default to 10 seconds. Minimum value is 1.
+  // If PeriodMilliseconds is set, this field is ignored.
   // +optional
   optional int32 periodSeconds = 4;
 
@@ -3970,6 +3972,11 @@ message Probe {
   // Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
   // +optional
   optional int64 terminationGracePeriodSeconds = 7;
+
+  // How often (in milliseconds) to perform the probe, defaults to 0.
+  // If this field is set, the PeriodSeconds field is ignored.
+  // +optional
+  optional int32 periodMilliseconds = 8;
 }
 
 // ProbeHandler defines a specific action that should be taken in a probe.

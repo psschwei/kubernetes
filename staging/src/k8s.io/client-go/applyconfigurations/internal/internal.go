@@ -5579,6 +5579,9 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: initialDelaySeconds
       type:
         scalar: numeric
+    - name: periodMilliseconds
+      type:
+        scalar: numeric
     - name: periodSeconds
       type:
         scalar: numeric

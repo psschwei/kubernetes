@@ -2156,7 +2156,7 @@ type Probe struct {
 	// How often (in milliseconds) to perform the probe, defaults to 0.
 	// If this field is set, the PeriodSeconds field is ignored.
 	// +optional
-	PeriodMilliseconds int32 `json:"periodMilliseconds,omitempty" protobuf:"varint,7,opt,name=periodMilliseconds"`
+	PeriodMilliseconds int32 `json:"periodMilliseconds,omitempty" protobuf:"varint,8,opt,name=periodMilliseconds"`
 }
 
 // PullPolicy describes a policy for if/when to pull a container image
