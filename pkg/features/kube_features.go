@@ -803,6 +803,13 @@ const (
 	// Honor Persistent Volume Reclaim Policy when it is "Delete" irrespective of PV-PVC
 	// deletion ordering.
 	HonorPVReclaimPolicy featuregate.Feature = "HonorPVReclaimPolicy"
+
+	// owner: @mikebrow @psschwei
+	// kep: http://kep.k8s.io/3066
+	// alpha: v1.24
+	//
+	// Allow Probe fields to be specified in seconds or milliseconds
+	ProbeReadSecondsAs featuregate.Feature = "ProbeReadSecondsAs"
 )
 
 func init() {
@@ -920,6 +927,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	IdentifyPodOS:                                  {Default: false, PreRelease: featuregate.Alpha},
 	PodAndContainerStatsFromCRI:                    {Default: false, PreRelease: featuregate.Alpha},
 	HonorPVReclaimPolicy:                           {Default: false, PreRelease: featuregate.Alpha},
+	ProbeReadSecondsAs:                             {Default: false, PreRelease: featuregate.Alpha},
 
 	// inherited features from generic apiserver, relisted here to get a conflict if it is changed
 	// unintentionally on either side:

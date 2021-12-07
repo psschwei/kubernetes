@@ -1022,6 +1022,109 @@ func TestDropProbeGracePeriod(t *testing.T) {
 	}
 }
 
+func TestDropProbeReadSecondsAs(t *testing.T) {
+	podWithMilliseconds := func() *api.Pod {
+		livenessReadSecondsAs := "milliseconds"
+		livenessPeriodSeconds := int32(3100)
+		livenessProbe := api.Probe{ReadSecondsAs: livenessReadSecondsAs, PeriodSeconds: livenessPeriodSeconds}
+		startupReadSecondsAs := "milliseconds"
+		startupPeriodSeconds := int32(500)
+		startupProbe := api.Probe{ReadSecondsAs: startupReadSecondsAs, PeriodSeconds: startupPeriodSeconds}
+		return &api.Pod{
+			Spec: api.PodSpec{
+				RestartPolicy: api.RestartPolicyNever,
+				Containers:    []api.Container{{Name: "container1", Image: "testimage", LivenessProbe: &livenessProbe, StartupProbe: &startupProbe}},
+			},
+		}
+	}
+	podWithoutMilliseconds := func() *api.Pod {
+		p := podWithMilliseconds()
+		p.Spec.Containers[0].LivenessProbe.ReadSecondsAs = ""
+		p.Spec.Containers[0].StartupProbe.ReadSecondsAs = ""
+		return p
+	}
+
+	podInfo := []struct {
+		description     string
+		hasMilliseconds bool
+		pod             func() *api.Pod
+	}{
+		{
+			description:     "uses milliseconds for all probes",
+			hasMilliseconds: true,
+			pod:             podWithMilliseconds,
+		},
+		{
+			description:     "does not use milliseconds for any probe",
+			hasMilliseconds: false,
+			pod:             podWithoutMilliseconds,
+		},
+		{
+			description:     "only has liveness probe uses milliseconds",
+			hasMilliseconds: true,
+			pod: func() *api.Pod {
+				p := podWithMilliseconds()
+				p.Spec.Containers[0].StartupProbe.ReadSecondsAs = ""
+				return p
+			},
+		},
+		{
+			description:     "is nil",
+			hasMilliseconds: false,
+			pod:             func() *api.Pod { return nil },
+		},
+	}
+
+	for _, enabled := range []bool{true, false} {
+		for _, oldPodInfo := range podInfo {
+			for _, newPodInfo := range podInfo {
+				oldPodUsesMilliseconds, oldPod := oldPodInfo.hasMilliseconds, oldPodInfo.pod()
+				newPodUsesMilliseconds, newPod := newPodInfo.hasMilliseconds, newPodInfo.pod()
+				if newPod == nil {
+					continue
+				}
+
+				t.Run(fmt.Sprintf("feature enabled=%v, old pod %v, new pod %v", enabled, oldPodInfo.description, newPodInfo.description), func(t *testing.T) {
+					defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.ProbeReadSecondsAs, enabled)()
+
+					var oldPodSpec *api.PodSpec
+					if oldPod != nil {
+						oldPodSpec = &oldPod.Spec
+					}
+					dropDisabledFields(&newPod.Spec, nil, oldPodSpec, nil)
+
+					// old pod should never be changed
+					if !reflect.DeepEqual(oldPod, oldPodInfo.pod()) {
+						t.Errorf("old pod changed: %v", cmp.Diff(oldPod, oldPodInfo.pod()))
+					}
+
+					switch {
+					case enabled || oldPodUsesMilliseconds:
+						// new pod should not be changed if the feature is enabled, or if the old pod uses milliseconds
+						if !reflect.DeepEqual(newPod, newPodInfo.pod()) {
+							t.Errorf("new pod changed: %v", cmp.Diff(newPod, newPodInfo.pod()))
+						}
+					case newPodUsesMilliseconds:
+						// new pod should be changed
+						if reflect.DeepEqual(newPod, newPodInfo.pod()) {
+							t.Errorf("new pod was not changed")
+						}
+						// new pod should not use milliseconds
+						if !reflect.DeepEqual(newPod, podWithoutMilliseconds()) {
+							t.Errorf("new pod uses milliseconds for all probes: %v", cmp.Diff(newPod, podWithoutMilliseconds()))
+						}
+					default:
+						// new pod should not need to be changed
+						if !reflect.DeepEqual(newPod, newPodInfo.pod()) {
+							t.Errorf("new pod changed: %v", cmp.Diff(newPod, newPodInfo.pod()))
+						}
+					}
+				})
+			}
+		}
+	}
+}
+
 func TestDropEphemeralContainers(t *testing.T) {
 	podWithEphemeralContainers := func() *api.Pod {
 		return &api.Pod{

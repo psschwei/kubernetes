@@ -571,6 +571,23 @@ func dropDisabledFields(
 		})
 	}
 
+	if !utilfeature.DefaultFeatureGate.Enabled(features.ProbeReadSecondsAs) && !probeReadSecondsAsInUse(oldPodSpec) {
+		// Set pod-level readSecondsAs to "" if the feature is disabled and it is not used
+		VisitContainers(podSpec, AllContainers, func(c *api.Container, containerType ContainerType) bool {
+			if c.LivenessProbe != nil {
+				c.LivenessProbe.ReadSecondsAs = ""
+			}
+			if c.StartupProbe != nil {
+				c.StartupProbe.ReadSecondsAs = ""
+			}
+			if c.ReadinessProbe != nil {
+				c.ReadinessProbe.ReadSecondsAs = ""
+			}
+			return true
+		})
+
+	}
+
 	if !utilfeature.DefaultFeatureGate.Enabled(features.PodOverhead) && !overheadInUse(oldPodSpec) {
 		// Set Overhead to nil only if the feature is disabled and it is not used
 		podSpec.Overhead = nil
@@ -778,6 +795,25 @@ func probeGracePeriodInUse(podSpec *api.PodSpec) bool {
 		// cannot be set for readiness probes
 		if (c.LivenessProbe != nil && c.LivenessProbe.TerminationGracePeriodSeconds != nil) ||
 			(c.StartupProbe != nil && c.StartupProbe.TerminationGracePeriodSeconds != nil) {
+			inUse = true
+			return false
+		}
+		return true
+	})
+
+	return inUse
+}
+
+// probeReadSecondsAs
+func probeReadSecondsAsInUse(podSpec *api.PodSpec) bool {
+	if podSpec == nil {
+		return false
+	}
+	var inUse bool
+	VisitContainers(podSpec, AllContainers, func(c *api.Container, containerType ContainerType) bool {
+		if (c.LivenessProbe != nil && c.LivenessProbe.ReadSecondsAs != "") ||
+			(c.ReadinessProbe != nil && c.ReadinessProbe.ReadSecondsAs != "") ||
+			(c.StartupProbe != nil && c.StartupProbe.ReadSecondsAs != "") {
 			inUse = true
 			return false
 		}
