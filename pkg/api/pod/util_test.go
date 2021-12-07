@@ -1030,10 +1030,14 @@ func TestDropProbeReadSecondsAs(t *testing.T) {
 		startupReadSecondsAs := "milliseconds"
 		startupPeriodSeconds := int32(500)
 		startupProbe := api.Probe{ReadSecondsAs: startupReadSecondsAs, PeriodSeconds: startupPeriodSeconds}
+		readinessReadSecondsAs := "milliseconds"
+		readinessPeriodSeconds := int32(6250)
+		readinessProbe := api.Probe{ReadSecondsAs: readinessReadSecondsAs, PeriodSeconds: readinessPeriodSeconds}
 		return &api.Pod{
 			Spec: api.PodSpec{
 				RestartPolicy: api.RestartPolicyNever,
-				Containers:    []api.Container{{Name: "container1", Image: "testimage", LivenessProbe: &livenessProbe, StartupProbe: &startupProbe}},
+				Containers: []api.Container{{Name: "container1", Image: "testimage", LivenessProbe: &livenessProbe,
+					StartupProbe: &startupProbe, ReadinessProbe: &readinessProbe}},
 			},
 		}
 	}
@@ -1041,6 +1045,7 @@ func TestDropProbeReadSecondsAs(t *testing.T) {
 		p := podWithMilliseconds()
 		p.Spec.Containers[0].LivenessProbe.ReadSecondsAs = ""
 		p.Spec.Containers[0].StartupProbe.ReadSecondsAs = ""
+		p.Spec.Containers[0].ReadinessProbe.ReadSecondsAs = ""
 		return p
 	}
 

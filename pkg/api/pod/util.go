@@ -804,7 +804,8 @@ func probeGracePeriodInUse(podSpec *api.PodSpec) bool {
 	return inUse
 }
 
-// probeReadSecondsAs
+// probeReadSecondsAs returns true if the pod spec is non-nil and has a probe that makes use
+// of the probe-level readSecondsAs feature
 func probeReadSecondsAsInUse(podSpec *api.PodSpec) bool {
 	if podSpec == nil {
 		return false
