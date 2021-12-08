@@ -1044,9 +1044,28 @@ func TestDropProbeReadSecondsAs(t *testing.T) {
 	podWithoutMilliseconds := func() *api.Pod {
 		p := podWithMilliseconds()
 		p.Spec.Containers[0].LivenessProbe.ReadSecondsAs = ""
+		p.Spec.Containers[0].LivenessProbe.PeriodSeconds = 4
 		p.Spec.Containers[0].StartupProbe.ReadSecondsAs = ""
+		p.Spec.Containers[0].StartupProbe.PeriodSeconds = 1
 		p.Spec.Containers[0].ReadinessProbe.ReadSecondsAs = ""
+		p.Spec.Containers[0].ReadinessProbe.PeriodSeconds = 7
 		return p
+	}
+
+	podWithoutUnits := func() *api.Pod {
+		livenessPeriodSeconds := int32(1)
+		livenessProbe := api.Probe{PeriodSeconds: livenessPeriodSeconds}
+		startupPeriodSeconds := int32(1)
+		startupProbe := api.Probe{PeriodSeconds: startupPeriodSeconds}
+		readinessPeriodSeconds := int32(1)
+		readinessProbe := api.Probe{PeriodSeconds: readinessPeriodSeconds}
+		return &api.Pod{
+			Spec: api.PodSpec{
+				RestartPolicy: api.RestartPolicyNever,
+				Containers: []api.Container{{Name: "container1", Image: "testimage", LivenessProbe: &livenessProbe,
+					StartupProbe: &startupProbe, ReadinessProbe: &readinessProbe}},
+			},
+		}
 	}
 
 	podInfo := []struct {
@@ -1070,6 +1089,7 @@ func TestDropProbeReadSecondsAs(t *testing.T) {
 			pod: func() *api.Pod {
 				p := podWithMilliseconds()
 				p.Spec.Containers[0].StartupProbe.ReadSecondsAs = ""
+				p.Spec.Containers[0].ReadinessProbe.ReadSecondsAs = ""
 				return p
 			},
 		},
@@ -1117,6 +1137,11 @@ func TestDropProbeReadSecondsAs(t *testing.T) {
 						// new pod should not use milliseconds
 						if !reflect.DeepEqual(newPod, podWithoutMilliseconds()) {
 							t.Errorf("new pod uses milliseconds for all probes: %v", cmp.Diff(newPod, podWithoutMilliseconds()))
+						}
+					case !enabled && !newPodUsesMilliseconds:
+						// new pod should not use milliseconds
+						if !reflect.DeepEqual(newPod, podWithoutUnits()) {
+							t.Errorf("not enabled and not milliseconds: %v", cmp.Diff(newPod, podWithoutUnits()))
 						}
 					default:
 						// new pod should not need to be changed

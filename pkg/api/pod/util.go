@@ -17,6 +17,7 @@ limitations under the License.
 package pod
 
 import (
+	"math"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
@@ -573,15 +574,31 @@ func dropDisabledFields(
 
 	if !utilfeature.DefaultFeatureGate.Enabled(features.ProbeReadSecondsAs) && !probeReadSecondsAsInUse(oldPodSpec) {
 		// Set pod-level readSecondsAs to "" if the feature is disabled and it is not used
+		// Set pod-level periodSeconds to closest second value, rounding up
 		VisitContainers(podSpec, AllContainers, func(c *api.Container, containerType ContainerType) bool {
 			if c.LivenessProbe != nil {
 				c.LivenessProbe.ReadSecondsAs = ""
+				if c.LivenessProbe.PeriodSeconds < 1000 {
+					c.LivenessProbe.PeriodSeconds = 1
+				} else {
+					c.LivenessProbe.PeriodSeconds = int32(math.Ceil(float64(c.LivenessProbe.PeriodSeconds) / 1000.0))
+				}
 			}
 			if c.StartupProbe != nil {
 				c.StartupProbe.ReadSecondsAs = ""
+				if c.StartupProbe.PeriodSeconds < 1000 {
+					c.StartupProbe.PeriodSeconds = 1
+				} else {
+					c.StartupProbe.PeriodSeconds = int32(math.Ceil(float64(c.StartupProbe.PeriodSeconds) / 1000.0))
+				}
 			}
 			if c.ReadinessProbe != nil {
 				c.ReadinessProbe.ReadSecondsAs = ""
+				if c.ReadinessProbe.PeriodSeconds < 1000 {
+					c.ReadinessProbe.PeriodSeconds = 1
+				} else {
+					c.ReadinessProbe.PeriodSeconds = int32(math.Ceil(float64(c.ReadinessProbe.PeriodSeconds) / 1000.0))
+				}
 			}
 			return true
 		})
