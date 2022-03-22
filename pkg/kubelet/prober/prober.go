@@ -158,7 +158,7 @@ func buildHeader(headerList []v1.HTTPHeader) http.Header {
 }
 
 func (pb *prober) runProbe(probeType probeType, p *v1.Probe, pod *v1.Pod, status v1.PodStatus, container v1.Container, containerID kubecontainer.ContainerID) (probe.Result, string, error) {
-	timeout := time.Duration(p.TimeoutSeconds) * time.Second
+	timeout := GetProbeTimeDuration(p.TimeoutSeconds, p.TimeoutMilliseconds)
 	if p.Exec != nil {
 		klog.V(4).InfoS("Exec-Probe runProbe", "pod", klog.KObj(pod), "containerName", container.Name, "execCommand", p.Exec.Command)
 		command := kubecontainer.ExpandContainerCommandOnlyStatic(p.Exec.Command, container.Env)

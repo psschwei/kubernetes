@@ -264,13 +264,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       name: nameValue
       ports:
@@ -295,13 +298,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       resources:
         limits:
@@ -350,13 +356,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       stdin: true
       stdinOnce: true
@@ -465,13 +474,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       name: nameValue
       ports:
@@ -496,13 +508,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       resources:
         limits:
@@ -551,13 +566,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       stdin: true
       stdinOnce: true
@@ -667,13 +685,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       name: nameValue
       ports:
@@ -698,13 +719,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       resources:
         limits:
@@ -753,13 +777,16 @@ template:
           path: pathValue
           port: portValue
           scheme: schemeValue
+        initialDelayMilliseconds: 9
         initialDelaySeconds: 2
+        periodMilliseconds: 8
         periodSeconds: 4
         successThreshold: 5
         tcpSocket:
           host: hostValue
           port: portValue
         terminationGracePeriodSeconds: 7
+        timeoutMilliseconds: 10
         timeoutSeconds: 3
       stdin: true
       stdinOnce: true

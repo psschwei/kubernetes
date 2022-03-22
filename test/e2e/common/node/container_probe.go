@@ -38,6 +38,7 @@ import (
 	testutils "k8s.io/kubernetes/test/utils"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 	admissionapi "k8s.io/pod-security-admission/api"
+	utilpointer "k8s.io/utils/pointer"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -457,6 +458,62 @@ var _ = SIGDescribe("Probing container", func() {
 	})
 
 	/*
+		Release: v1.24
+		Testname: Pod readiness probe, delayed by startup probe, using milliseconds for periodSeconds units
+		Description: A Pod is created with startup and readiness probes. The Container is started by creating /tmp/startup after 45 seconds, delaying the ready state by this amount of time. This is similar to the "Pod readiness probe, with initial delay" test.
+	*/
+
+	ginkgo.It("should be ready immediately after subsecond startupProbe succeeds [Feature:ReadSecondsAs]", func() {
+		// Probe workers sleep at Kubelet start for a random time which is at most PeriodSeconds
+		// this test requires both readiness and startup workers running before updating statuses
+		// to avoid flakes, ensure sleep before startup (10s) > readinessProbe.PeriodSeconds
+		cmd := []string{"/bin/sh", "-c", "echo ok >/tmp/health; sleep 10; echo ok >/tmp/startup; sleep 60"}
+		readinessProbe := &v1.Probe{
+			ProbeHandler:        execHandler([]string{"/bin/cat", "/tmp/health"}),
+			InitialDelaySeconds: 0,
+			PeriodSeconds:       3,
+			PeriodMilliseconds:  utilpointer.Int32(100),
+		}
+		startupProbe := &v1.Probe{
+			ProbeHandler:        execHandler([]string{"/bin/cat", "/tmp/startup"}),
+			InitialDelaySeconds: 0,
+			FailureThreshold:    120,
+			PeriodSeconds:       1,
+			PeriodMilliseconds:  utilpointer.Int32(-500),
+		}
+		p := podClient.Create(startupPodSpec(startupProbe, readinessProbe, nil, cmd))
+
+		p, err := podClient.Get(context.TODO(), p.Name, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+
+		err = e2epod.WaitForPodContainerStarted(f.ClientSet, f.Namespace.Name, p.Name, 0, framework.PodStartTimeout)
+		framework.ExpectNoError(err)
+		startedTime := time.Now()
+
+		// We assume the pod became ready when the container became ready. This
+		// is true for a single container pod.
+		err = e2epod.WaitTimeoutForPodReadyInNamespace(f.ClientSet, p.Name, f.Namespace.Name, framework.PodStartTimeout)
+		framework.ExpectNoError(err)
+		readyTime := time.Now()
+
+		p, err = podClient.Get(context.TODO(), p.Name, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+
+		isReady, err := testutils.PodRunningReady(p)
+		framework.ExpectNoError(err)
+		framework.ExpectEqual(isReady, true, "pod should be ready")
+
+		readyIn := readyTime.Sub(startedTime)
+		framework.Logf("Container started at %v, pod became ready at %v, %v after startupProbe succeeded", startedTime, readyTime, readyIn)
+		if readyIn < 0 {
+			framework.Failf("Pod became ready before startupProbe succeeded")
+		}
+		if readyIn > 25*time.Second {
+			framework.Failf("Pod became ready in %v, more than 25s after startupProbe succeeded. It means that the delay readiness probes were not initiated immediately after startup finished.", readyIn)
+		}
+	})
+
+	/*
 		Release: v1.21
 		Testname: Set terminationGracePeriodSeconds for livenessProbe
 		Description: A pod with a long terminationGracePeriod is created with a shorter livenessProbe-level terminationGracePeriodSeconds. We confirm the shorter termination period is used.
@@ -558,6 +615,95 @@ var _ = SIGDescribe("Probing container", func() {
 		}
 		pod := gRPCServerPodSpec(nil, livenessProbe, "etcd")
 		RunLivenessTest(f, pod, 1, defaultObservationTimeout)
+	})
+
+	/*
+	  Release v1.24
+	  Testname: Pod startup probe, with readSecondsAs milliseconds, is faster than with seconds
+	  Description: Two pods with startup probes are created, one using period seconds and the other period milliseconds.
+	  			   The milliseconds pod is ready faster than the seconds one.
+	*/
+	ginkgo.It("readSecondsAs milliseconds should start faster than seconds [Feature:ProbeReadSecondsAs]", func() {
+		// If ProbeReadSecondsAs feature gate is disabled, there is no need to run this test
+		e2eskipper.SkipUnlessFeatureGateEnabled(kubefeatures.SubSecondProbes)
+
+		// First we get the time to readiness for a pod using period "seconds"
+		cmd := []string{"/bin/sh", "-c", "sleep 1; touch /tmp/healthy"}
+		probe1 := &v1.Probe{
+			ProbeHandler: v1.ProbeHandler{
+				Exec: &v1.ExecAction{
+					Command: []string{"cat", "/tmp/healthy"},
+				},
+			},
+			InitialDelaySeconds: 0,
+			PeriodSeconds:       1,
+			FailureThreshold:    30,
+		}
+		p1 := podClient.Create(startupPodSpec(probe1, nil, nil, cmd))
+		p1, err := podClient.Get(context.TODO(), p1.Name, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+
+		err = e2epod.WaitForPodContainerStarted(f.ClientSet, f.Namespace.Name, p1.Name, 0, framework.PodStartTimeout)
+		framework.ExpectNoError(err)
+		startedTime1 := time.Now()
+
+		// We assume the pod became ready when the container became ready. This
+		// is true for a single container pod.
+		err = e2epod.WaitTimeoutForPodReadyInNamespace(f.ClientSet, p1.Name, f.Namespace.Name, framework.PodStartTimeout)
+		framework.ExpectNoError(err)
+		readyTime1 := time.Now()
+
+		p1, err = podClient.Get(context.TODO(), p1.Name, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+
+		isReady1, err := testutils.PodRunningReady(p1)
+		framework.ExpectNoError(err)
+		framework.ExpectEqual(isReady1, true, "pod should be ready")
+
+		elasped1 := readyTime1.Sub(startedTime1)
+		framework.Logf("Container started at %v, pod became ready at %v, elapsed time %s", startedTime1, readyTime1, elasped1)
+
+		// Next we get the time to readiness for a pod using period "milliseconds"
+		var milliseconds int32 = -900
+		probe2 := &v1.Probe{
+			ProbeHandler: v1.ProbeHandler{
+				Exec: &v1.ExecAction{
+					Command: []string{"cat", "/tmp/healthy"},
+				},
+			},
+			InitialDelaySeconds: 0,
+			PeriodSeconds:       1,
+			FailureThreshold:    30,
+			PeriodMilliseconds:  &milliseconds,
+		}
+		p2 := podClient.Create(startupPodSpec(probe2, nil, nil, cmd))
+		p2, err = podClient.Get(context.TODO(), p2.Name, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+
+		err = e2epod.WaitForPodContainerStarted(f.ClientSet, f.Namespace.Name, p2.Name, 0, framework.PodStartTimeout)
+		framework.ExpectNoError(err)
+		startedTime2 := time.Now()
+
+		// We assume the pod became ready when the container became ready. This
+		// is true for a single container pod.
+		err = e2epod.WaitTimeoutForPodReadyInNamespace(f.ClientSet, p2.Name, f.Namespace.Name, framework.PodStartTimeout)
+		framework.ExpectNoError(err)
+		readyTime2 := time.Now()
+
+		p2, err = podClient.Get(context.TODO(), p2.Name, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+
+		isReady2, err := testutils.PodRunningReady(p2)
+		framework.ExpectNoError(err)
+		framework.ExpectEqual(isReady2, true, "pod should be ready")
+
+		elasped2 := readyTime2.Sub(startedTime2)
+		framework.Logf("Container started at %v, pod became ready at %v, elapsed time %s", startedTime2, readyTime2, elasped2)
+
+		// Finally, determine if millisecond probe started faster than second probe
+		success := elasped2 < elasped1
+		framework.ExpectEqual(success, true, "subsecond probe should be faster than second probe")
+
 	})
 })
 

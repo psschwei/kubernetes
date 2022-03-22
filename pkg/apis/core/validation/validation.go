@@ -26,6 +26,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -53,6 +54,7 @@ import (
 	"k8s.io/kubernetes/pkg/cluster/ports"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/fieldpath"
+	"k8s.io/kubernetes/pkg/kubelet/prober"
 	netutils "k8s.io/utils/net"
 )
 
@@ -2700,6 +2702,15 @@ func validateProbe(probe *core.Probe, fldPath *field.Path) field.ErrorList {
 	allErrs = append(allErrs, ValidateNonnegativeField(int64(probe.FailureThreshold), fldPath.Child("failureThreshold"))...)
 	if probe.TerminationGracePeriodSeconds != nil && *probe.TerminationGracePeriodSeconds <= 0 {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("terminationGracePeriodSeconds"), *probe.TerminationGracePeriodSeconds, "must be greater than 0"))
+	}
+	if probe.PeriodMilliseconds != nil && prober.GetProbeTimeDuration(probe.PeriodSeconds, probe.PeriodMilliseconds) < prober.MinProbeTimeDuration {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("periodSeconds"), "periodSeconds + periodMilliseconds", "must be greater than 100ms"))
+	}
+	if probe.TimeoutMilliseconds != nil && prober.GetProbeTimeDuration(probe.TimeoutSeconds, probe.TimeoutMilliseconds) < prober.MinProbeTimeDuration {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("timeoutSeconds"), "timeoutSeconds + timeoutMilliseconds", "must be greater than 100ms"))
+	}
+	if probe.InitialDelayMilliseconds != nil && prober.GetProbeTimeDuration(probe.InitialDelaySeconds, probe.InitialDelayMilliseconds) < 0*time.Second {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("initialDelaySeconds"), "initialDelaySeconds + initialDelayMilliseconds", "must be greater than 0s"))
 	}
 	return allErrs
 }

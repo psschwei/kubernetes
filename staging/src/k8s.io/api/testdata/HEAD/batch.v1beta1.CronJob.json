@@ -645,7 +645,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "readinessProbe": {
                   "exec": {
@@ -678,7 +681,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "startupProbe": {
                   "exec": {
@@ -711,7 +717,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "lifecycle": {
                   "postStart": {
@@ -917,7 +926,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "readinessProbe": {
                   "exec": {
@@ -950,7 +962,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "startupProbe": {
                   "exec": {
@@ -983,7 +998,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "lifecycle": {
                   "postStart": {
@@ -1189,7 +1207,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "readinessProbe": {
                   "exec": {
@@ -1222,7 +1243,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "startupProbe": {
                   "exec": {
@@ -1255,7 +1279,10 @@
                   "periodSeconds": 4,
                   "successThreshold": 5,
                   "failureThreshold": 6,
-                  "terminationGracePeriodSeconds": 7
+                  "terminationGracePeriodSeconds": 7,
+                  "periodMilliseconds": 8,
+                  "initialDelayMilliseconds": 9,
+                  "timeoutMilliseconds": 10
                 },
                 "lifecycle": {
                   "postStart": {
